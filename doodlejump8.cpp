@@ -59,7 +59,7 @@ const int spring2 = 13;
 
 double score;
 double highscore;
-double tempscore = 700;
+
 
 Mix_Music *music = NULL; 
  
@@ -652,6 +652,7 @@ void init_board()
 
 void move_board (double v)
 {
+	score += v;
     for( int i=board_n ; i>=0 ; i-- )
     {
         board[i].y+=v;
@@ -778,7 +779,6 @@ void jetmove(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlejet
 {
     for(int i=0;i<100;i++)
     {
-    	score += 10;
         loadIMG(screen,backgroundS,0,0);
         print_board(screen,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS);
         loadIMG(screen,doodlejetS,200,156);
@@ -912,7 +912,7 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                 break;
         }
     }
-    if(doodle.y >600 )
+    if(doodle.y >700 )
         return false;
     return true;
 }
@@ -935,15 +935,6 @@ bool doodle_move(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodl
         if (collision(screen,backgroundS,doodlejetS,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS)==false)
         {
             return false;
-        }
-        if(doodle.vy>0 && (tempscore > doodle.y ||doodle.y<100))
-        {
-        	if (doodle.y < tempscore)
-        	{
-        		tempscore = doodle.y;
-        	}
-        	score += doodle.vy;
-        	cout<<"doodle.vy : "<<doodle.vy<<"\t"<<"doodle.y : "<<doodle.y<<"\t"<<"score : "<<score<<endl;
         }
 
         doodle.vy += g;

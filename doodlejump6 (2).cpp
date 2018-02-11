@@ -5,7 +5,7 @@
 #include"SDL/SDL_ttf.h"
 #include<cstdlib>
 #include<ctime>
-#include "SDL/SDL_mixer.h"
+#include<math.h>
 #include<sstream>
 #include <string>
 #include <fstream>
@@ -14,24 +14,24 @@ using namespace std;
 
 struct boards
 {
-    double x;
-    double y;
+    float x;
+    float y;
     int type;
     int len;
-    double vy;
-    double vx;
+    float vy;
+    float vx;
     int w;
     int h;
 };
 
-const double vmax = 10;
-const double g = -0.25;
+const float vmax = 10;
+const float g = -0.25;
 
 struct Doodle
 {
-    double x = 300;
-    double y = 599;
-    double vy = vmax;
+    float x = 300;
+    float y = 599;
+    float vy = vmax;
     int width = 100;
     int height = 100;
 };
@@ -57,25 +57,18 @@ const int brokenbroken = 11;
 const int completlybroken = 12;
 const int spring2 = 13;
 
-double score;
-double highscore;
-double tempscore = 700;
+int score;
+int highscore;
 
-Mix_Music *music = NULL; 
- 
-Mix_Chunk *scratch = NULL; 
-Mix_Chunk *high = NULL;
-Mix_Chunk *med = NULL;
-Mix_Chunk *low = NULL;
 
-void show_score(SDL_Surface * screen, TTF_Font* scorefont)
+void show_score(SDL_Surface * screen, TTF_Font* font)
 {
     stringstream scoreString;
     SDL_Surface * shown_score;
     SDL_Color color={0,130,255};
     
     scoreString<<"score : "<<score;
-    shown_score = TTF_RenderText_Solid(scorefont,scoreString.str().c_str(),color);
+    shown_score = TTF_RenderText_Solid(font,scoreString.str().c_str(),color);
 	
 	SDL_Rect position;
     position.x = 50;
@@ -86,7 +79,7 @@ void show_score(SDL_Surface * screen, TTF_Font* scorefont)
 }
 
 
-void show_highscore(SDL_Surface * screen , TTF_Font* scorefont )
+void show_highscore(SDL_Surface * screen , TTF_Font* font )
 {	
     stringstream highscoreString;
     SDL_Surface * shown_highscore;
@@ -94,7 +87,7 @@ void show_highscore(SDL_Surface * screen , TTF_Font* scorefont )
 
  
     highscoreString<<"highscore : "<<highscore;
-    shown_highscore = TTF_RenderText_Solid(scorefont,highscoreString.str().c_str(),color);
+    shown_highscore = TTF_RenderText_Solid(font,highscoreString.str().c_str(),color);
     
 	SDL_Rect position;
     position.x = 50;
@@ -379,9 +372,11 @@ int showmenu_pause(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont )	
 }
 
 
-int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont , TTF_Font* scorefont )	//{ "play again","exit"};0,1
+int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont  )	//{ "play again","exit"};0,1
 {
 	
+	show_score(screen, font);
+	show_highscore(screen, font);
 	
 	
 	int x,y;
@@ -395,7 +390,7 @@ int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont
 
 	SDL_Rect positiontitle;
 	positiontitle.x=140;
-	positiontitle.y=150;
+	positiontitle.y=50;
 	
 	menu[0]=TTF_RenderText_Solid(font,menuitem[0],color[0]);
 	menu[1]=TTF_RenderText_Solid(font,menuitem[1],color[0]);
@@ -404,27 +399,22 @@ int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont
 
 	
 	position[0].x=140;
-	position[0].y=300;
+	position[0].y=250;
 	position[0].w=200;
-	position[0].h=100;
+	position[0].h=150;
 
 	position[1].x=140;
 	position[1].y=450;
 	position[1].w=200;
-	position[1].h=100;
+	position[1].h=200;
 
 	
 	SDL_FillRect( screen, &screen->clip_rect, SDL_MapRGB( screen->format, 00, 00, 00 ) );
-	
-
-	show_score(screen, scorefont);
-	show_highscore(screen, scorefont);
-
+		
 	SDL_Event event;
 	
 	while(1)	
 	{
-		
 		for(int i=0;i<menunumber;i++)
 			SDL_BlitSurface(menu[i],NULL,screen,&position[i]);
 		SDL_BlitSurface(title,NULL,screen,&positiontitle);
@@ -510,12 +500,6 @@ int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont
 	}	
 }
 
-void play_music()
-{
-	music = Mix_LoadMUS( "piano.mp3" );
-	    //Free the music
-    Mix_FreeMusic( music );
-}
 
 int loadIMG( SDL_Surface *screen , SDL_Surface *image , int image_x , int image_y )
 {
@@ -585,12 +569,14 @@ void print_board(SDL_Surface *screen,SDL_Surface *stableS,SDL_Surface *brokenS,S
                 if(board[i].x<300)
                 {
                     loadIMG(screen, mirrorS,450, board[i].y-50);
-                    loadIMG(screen, stableS,board[i].x, board[i].y);
+                     board[i].x = 100;
+                    loadIMG(screen, stableS,100, board[i].y);
                 }
                 else
                 {
                     loadIMG(screen, mirrorS,50, board[i].y-50);
-                    loadIMG(screen, stableS , board[i].x, board[i].y);
+                     board[i].x = 500;
+                    loadIMG(screen, stableS,500, board[i].y);
                 }
                 break;
             case brokenbroken:
@@ -607,10 +593,7 @@ void print_board(SDL_Surface *screen,SDL_Surface *stableS,SDL_Surface *brokenS,S
 void init_board()
 {
 	score=0;
-	doodle.vy = vmax;
-	doodle.x = 300;
-	doodle.y = 599;
-
+	
     for( int i=0 ; i<board_n ; i++)
     {
         board[i].x = rand()%560+20;
@@ -650,8 +633,10 @@ void init_board()
     }
 }
 
-void move_board (double v)
+void move_board (int v)
 {
+	score+=v;
+	
     for( int i=board_n ; i>=0 ; i-- )
     {
         board[i].y+=v;
@@ -778,7 +763,6 @@ void jetmove(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlejet
 {
     for(int i=0;i<100;i++)
     {
-    	score += 10;
         loadIMG(screen,backgroundS,0,0);
         print_board(screen,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS);
         loadIMG(screen,doodlejetS,200,156);
@@ -811,8 +795,7 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                 if(doodle.vy<0)
                 {
                     if ( collision_check(i,23))
-                    {    
-                    	music = Mix_LoadMUS( "beep.mp3" );
+                    {
                         board[i].type = brokenbroken;
                     }
                 }
@@ -824,8 +807,7 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                     board[i].w = 100;
                     board[i].h = 0;
                     if ( collision_check(i,23))
-                    {    
-                    	music = Mix_LoadMUS( "beep.mp3" );
+                    {
                         doodle.vy = vmax;
                     }
                 }
@@ -836,8 +818,7 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                     board[i].w = 100;
                     board[i].h = 0;
                     if (collision_check(i,23))
-                    {   
-                    	music = Mix_LoadMUS( "beep.mp3" );
+                    {
                         doodle.vy = 2*vmax;
                         board[i].type = spring2;
                     }
@@ -858,7 +839,6 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                 if (collision_check(i,23))
                 {
                     jetmove(screen,backgroundS,doodlejetS,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS);
-                    music = Mix_LoadMUS( "beep.mp3" );
                     doodle.vy = vmax/2;
                     doodle.x = 300;
                     doodle.y = 200;
@@ -877,8 +857,7 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                         return false;
                     }
                     if (doodle.vy < 0);
-                    { 
-                    	music = Mix_LoadMUS( "beep.mp3" );
+                    {
                         board[i].type = stable;
                         doodle.vy = vmax;
                     }
@@ -889,30 +868,27 @@ bool collision(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodlej
                 board[i].w = 100;
                 board[i].h = 0;
                 if (collision_check(i,23))
-                {    
-                	music = Mix_LoadMUS( "beep.mp3" );
+                {
                     doodle.vy = vmax;
                 }
-                if (board[i].x <300)
+                if (board[i].x == 100)
                 {
                     if(doodle.x + doodle.width/4 < 525 && doodle.x + doodle.width*3/4 > 450 && doodle.y + doodle.height > board[i].y - 50 &&  doodle.y + doodle.height < board[i].y + 150 )
                     {
-                   
                         return false;
                     }
                 }
-                else
+                if(board[i].x == 500)
                 {
                     if(doodle.x + doodle.width/4 < 125 && doodle.x + doodle.width*3/4 > 50 && doodle.y + doodle.height > board[i].y - 50 &&  doodle.y + doodle.height < board[i].y + 150 )
                     {
-
                         return false;
                     }
                 }
                 break;
         }
     }
-    if(doodle.y >600 )
+    if(doodle.y >700 )
         return false;
     return true;
 }
@@ -935,15 +911,6 @@ bool doodle_move(SDL_Surface *screen,SDL_Surface *backgroundS,SDL_Surface *doodl
         if (collision(screen,backgroundS,doodlejetS,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS)==false)
         {
             return false;
-        }
-        if(doodle.vy>0 && (tempscore > doodle.y ||doodle.y<100))
-        {
-        	if (doodle.y < tempscore)
-        	{
-        		tempscore = doodle.y;
-        	}
-        	score += doodle.vy;
-        	cout<<"doodle.vy : "<<doodle.vy<<"\t"<<"doodle.y : "<<doodle.y<<"\t"<<"score : "<<score<<endl;
         }
 
         doodle.vy += g;
@@ -991,13 +958,12 @@ int main(int argc, char *argv[])
 {     
     srand(time(0));
 	
-	bool running , quit = false , again = false ;
+	bool running ;
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	
 	TTF_Font* font=TTF_OpenFont("zachary.ttf",50);
 	TTF_Font* titlefont=TTF_OpenFont("zachary.ttf",80);
-	TTF_Font* scorefont=TTF_OpenFont("zachary.ttf",30);
 
 
 	if (SDL_Init(SDL_INIT_EVERYTHING)!= 0) 
@@ -1006,11 +972,7 @@ int main(int argc, char *argv[])
         return 1;
 
 	} 
-/*
-	if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ) {
-	 return false; 
-	}
-*/
+
     SDL_Surface *screen;
 	screen = SDL_SetVideoMode(700 , 700 , 32 , SDL_DOUBLEBUF);
 
@@ -1019,6 +981,8 @@ int main(int argc, char *argv[])
 		running=false;
 		return 1;
 	}
+
+    init_board();
 
 
     SDL_Surface *backgroundS = init_surface("background.bmp");
@@ -1040,159 +1004,131 @@ int main(int argc, char *argv[])
     SDL_Surface *doodlejetS = init_surface("doodlejet.bmp");
 
     Uint8 * keystates = SDL_GetKeyState ( NULL );
-
-
+    
+    
+	ifstream readFile;
+	readFile.open( "doodle/highscore.txt" );
+	if( readFile.is_open() )
+	{
+		while ( !readFile.eof() )
+			readFile >> highscore;	
+	}
+	readFile.close( );
+	
+   
+    SDL_Event occur;
+    
+     
 	int i=showmenu_start (screen,font,titlefont);
 	
 	if(i==0)
 	 	running=true;
-
 	 	
 	else if(i==1)
 	{
-		quit=true; 
+		running=false; 
 		SDL_FreeSurface(screen);
 		return 1; 
 	}
-
-
-
-
-    while(!quit)
-    {
-
-	    init_board();
-	    
-		ifstream readFile;
-		readFile.open( "highscore.txt" );
-		if( readFile.is_open() )
-		{
-			while ( !readFile.eof() )
-				readFile >> highscore;	
-		}
-		readFile.close( );
-		
-		if(again == true)
-		{
-			running = true;
-			again = false;
-		}
-	   
-	    SDL_Event occur;
-		 
-		while(running == true)
-		{
-	        if ( !SDL_PollEvent ( &occur ) )
-	        {
-	            if ( occur.type == SDL_KEYDOWN )
-	            {
-					if ( keystates [ SDLK_ESCAPE ] )
+	 
+	while(running == true)
+	{
+        if ( !SDL_PollEvent ( &occur ) )
+        {
+            if ( occur.type == SDL_KEYDOWN )
+            {
+				if ( keystates [ SDLK_ESCAPE ] )
+				{
+					i=showmenu_pause(screen,font,titlefont);
+					
+/*					if(i==0)	//continue
 					{
-						i=showmenu_pause(screen,font,titlefont);
 						
-	/*					if(i==0)	//continue
-						{
-							
-						}
-	*/					if(i==1)	//play agian
-						{
-							// play again and set everything again
-							init_board();
-							running=false;
-							again =true;
-						}
-						if(i==2)	//exit
-						{
-							quit=true;
-							running=false; 
-							SDL_FreeSurface(screen);
-							return 1; 
-						}
 					}
-								
-	                if ( keystates [ SDLK_RIGHT ] )
-	                {
-	                    doodle.x+=5;
-	                    doodleS = doodleRS;
-	                }
-	                if ( keystates [ SDLK_LEFT ] )
-	                {
-	                    doodle.x-=5;
-	                    doodleS = doodleLS;
-	                }
-	                if(doodle.x>600)
-	                    doodle.x=0;
-	                if(doodle.x<0)
-	                    doodle.x=600;
-	            }
-	        }
-
-	        loadIMG(screen , backgroundS , 0 , 0);
-//	        play_music();
-
-	        print_board(screen,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS);
-
-	        loadIMG(screen , doodleS , doodle.x , doodle.y);
-	       
-	        show_score(screen, scorefont);
-
-	        SDL_Flip(screen);
-
-
-			ofstream writeFile ( "highscore.txt" );
-			if ( writeFile.is_open() )
-			{
-				if (score > highscore)
-					highscore = score;
-				writeFile << highscore;
-			}
-			writeFile.close();
-
-	        if(doodle_move(screen,backgroundS,doodlejetS,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS)==false)
-	        {
-				i=showmenu_gameover(screen,font,titlefont,scorefont);
-
-	        	if(i==0)	//play again
-				{
-				// play again and set everything again
-					init_board();
-					running=false;
-					again =true;
-
+*/					if(i==1)	//play agian
+					{
+						// play again and set everything again
+						init_board();
+						running=true;
+					}
+					if(i==2)	//exit
+					{
+						running=false; 
+						SDL_FreeSurface(screen);
+						return 1; 
+					}
 				}
-				if(i==1)	//exit
-				{
-					quit=true;
-					running=false; 
-					SDL_FreeSurface(screen);
-					return 1; 
-				}
-	        }
+							
+                if ( keystates [ SDLK_RIGHT ] )
+                {
+                    doodle.x+=5;
+                    doodleS = doodleRS;
+                }
+                if ( keystates [ SDLK_LEFT ] )
+                {
+                    doodle.x-=5;
+                    doodleS = doodleLS;
+                }
+                if(doodle.x>600)
+                    doodle.x=0;
+                if(doodle.x<0)
+                    doodle.x=600;
+            }
+        }
 
-/*	    if( music == NULL )
-	    {
-	        return false;
-	    }
-*/
+        loadIMG(screen , backgroundS , 0 , 0);
 
-		    
-	        //SDL_PollEvent(&occur);
-	  
-	     	if(occur.type==SDL_QUIT)
-	    	{
-	    		quit=true;
-	         	running=false;
-	        	SDL_FreeSurface(screen);
-	         	return 1;
+        print_board(screen,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS);
 
-	    	}
+        loadIMG(screen , doodleS , doodle.x , doodle.y);
+        show_score(screen, font);
 
+        SDL_Flip(screen);
+
+
+		ofstream writeFile ( "highscore.txt" );
+		if ( writeFile.is_open() )
+		{
+			if (score > highscore)
+				highscore = score;
+			writeFile << highscore;
 		}
-   }
+		writeFile.close();
+
+        if(doodle_move(screen,backgroundS,doodlejetS,stableS,brokenS,movableS,monster1S,monster2S,monster3S,jetS,mirrorS,springS,spring2S,brokenbrokenS,completlybrokenS)==false)
+        {
+			i=showmenu_gameover(screen,font,titlefont);
+
+        	if(i==0)
+			{
+			// play again and set everything again
+				init_board();
+				running=true;
+			}
+			if(i==1)
+			{
+				running=false; 
+				SDL_FreeSurface(screen);
+				return 1; 
+			}
+        }
+
+	    
+        //SDL_PollEvent(&occur);
+  
+     	if(occur.type==SDL_QUIT)
+    	{
+
+         	running=false;
+        	SDL_FreeSurface(screen);
+         	return 1;
+
+    	}
+
+	}
+   
 	TTF_CloseFont(font);
 	TTF_CloseFont(titlefont);
-	TTF_CloseFont(scorefont);
-
 	TTF_Quit();
 //	SDL_Quit();
     SDL_QUIT;

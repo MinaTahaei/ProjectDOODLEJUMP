@@ -55,14 +55,14 @@ const int brokenbroken = 11;
 const int completlybroken = 12;
 
 
-int showmenu_start(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont )
+int showmenu_start(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont )
 {
 	int x,y;
 	const int menunumber=2;
 	const char* menuitem[menunumber]={ "play","exit"};//0,1
 	SDL_Surface* menu[menunumber]={NULL};
 	bool selected_item[menunumber]={0,0};
-	SDL_Color color[menunumber]={{255,255,255},{255,0,0},{80,210,30}};
+	SDL_Color color[3]={{255,255,255},{255,0,0},{80,210,30}};
 	
 	SDL_Surface* title=TTF_RenderText_Solid(titlefont,"doodle jump",color[2]);
 	
@@ -187,14 +187,14 @@ int showmenu_start(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont )
 	}
 	
 }
-int showmenu_pause(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont )
+int showmenu_pause(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont )
 {
 	int x,y;
 	const int menunumber=3;
 	const char* menuitem[menunumber]={ "continue", "play again" , "exit"};//0,1,2
 	SDL_Surface* menu[menunumber]={NULL};
 	bool selected_item[menunumber]={0,0,0};
-	SDL_Color color[menunumber]={{255,255,255},{255,0,0},{255,160,0}};
+	SDL_Color color[3]={{255,255,255},{255,0,0},{255,160,0}};
 	
 	SDL_Surface* title=TTF_RenderText_Solid(titlefont,"pause",color[2]);
 	
@@ -330,7 +330,7 @@ int showmenu_pause(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont )
 		SDL_Delay(20);
 	}
 }
-int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont  )
+int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font* titlefont  )
 {
 	
 	int x,y;
@@ -338,7 +338,7 @@ int showmenu_gameover(SDL_Surface* screen , TTF_Font* font , TTF_Font *titlefont
 	const char* menuitem[menunumber]={ "play again","exit"};//0,1
 	SDL_Surface* menu[menunumber]={NULL};
 	bool selected_item[menunumber]={0,0};
-	SDL_Color color[menunumber]={{255,255,255},{0,130,255},{255,0,0}};
+	SDL_Color color[3]={{255,255,255},{0,130,255},{255,0,0}};
 	
 	SDL_Surface* title=TTF_RenderText_Solid(titlefont,"game over!!",color[2]);
 
@@ -905,8 +905,8 @@ int main(int argc, char *argv[])
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	
-	TTF_Font* font=TTF_OpenFont("zachary.ttf",30)
-	TTF_Font* titlefont=TTF_OpenFont("zachary.ttf",50)
+	TTF_Font* font=TTF_OpenFont("zachary.ttf",30);
+	TTF_Font* titlefont=TTF_OpenFont("zachary.ttf",50);
 
 
 	if (SDL_Init(SDL_INIT_EVERYTHING)!= 0) 
@@ -969,8 +969,8 @@ int main(int argc, char *argv[])
             {
 				if ( keystates [ SDLK_ESCAPE ] )
 				{
-/*					i=showmenu_pause(screen,font,titlefont);
-					if(i==1)
+					i=showmenu_pause(screen,font,titlefont);
+/*					if(i==1)
 					{
 						// play again and set everything again
 						score=0;
